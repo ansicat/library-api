@@ -24,11 +24,19 @@ class BorrowingViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Borrowing.objects.all()
+    queryset = Borrowing.objects.select_related()
     serializer_class = BorrowingSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     pagination_class = BorrowingPagination
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(user=self.request.user)
+
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "retrieve":
