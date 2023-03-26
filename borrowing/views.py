@@ -11,7 +11,8 @@ from borrowing.models import Borrowing
 from borrowing.serializers import (
     BorrowingSerializer,
     BorrowingDetailSerializer,
-    BorrowingCreateSerializer, BorrowingReturnSerializer,
+    BorrowingCreateSerializer,
+    BorrowingReturnSerializer,
 )
 
 
@@ -78,7 +79,9 @@ class BorrowingViewSet(
 
         if serializer.is_valid():
             with transaction.atomic():
-                Book.objects.filter(id=borrowing.book.id).update(inventory=models.F("inventory") + 1)
+                Book.objects.filter(id=borrowing.book.id).update(
+                    inventory=models.F("inventory") + 1
+                )
                 serializer.save()
                 return Response(serializer.data)
 
