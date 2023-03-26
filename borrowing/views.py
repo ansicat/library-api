@@ -36,6 +36,10 @@ class BorrowingViewSet(
         if not self.request.user.is_staff:
             queryset = queryset.filter(user=self.request.user)
 
+        is_active = self.request.query_params.get("is_active")
+        if is_active == "true":
+            queryset = queryset.filter(actual_return_date__isnull=True)
+
         return queryset
 
     def get_serializer_class(self):
