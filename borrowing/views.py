@@ -1,7 +1,9 @@
 from django.db import models, transaction
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from book.models import Book
@@ -9,7 +11,7 @@ from borrowing.models import Borrowing
 from borrowing.serializers import (
     BorrowingSerializer,
     BorrowingDetailSerializer,
-    BorrowingCreateSerializer,
+    BorrowingCreateSerializer, BorrowingReturnSerializer,
 )
 
 
@@ -51,6 +53,8 @@ class BorrowingViewSet(
             return BorrowingDetailSerializer
         elif self.action == "create":
             return BorrowingCreateSerializer
+        elif self.action == "return_book":
+            return BorrowingReturnSerializer
 
         return BorrowingSerializer
 
@@ -61,3 +65,21 @@ class BorrowingViewSet(
                 inventory=models.F("inventory") - 1
             )
             serializer.save(user=self.request.user)
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="return",
+    )
+    def return_book(self, request, pk=None):
+        """Endpoint for return borrowing of book"""
+        borrowing = self.get_object()
+        serializer = self.get_serializer(borrowing, data=request.data)
+
+        if serializer.is_valid():
+            with transaction.atomic():
+                Book.objects.filter(id=borrowing.book.id).update(inventory=models.F("inventory") + 1)
+                serializer.save()
+                return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
