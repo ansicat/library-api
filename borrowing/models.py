@@ -33,3 +33,7 @@ class Borrowing(models.Model):
                 "greater or equal to borrow date",
             ),
         ]
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
