@@ -1,4 +1,3 @@
-from django.db import models, transaction
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -6,11 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from book.models import Book
 from borrowing.models import Borrowing
 from borrowing.serializers import (
     BorrowingSerializer,
-    BorrowingDetailSerializer,
     BorrowingCreateSerializer,
     BorrowingReturnSerializer,
 )
@@ -50,9 +47,7 @@ class BorrowingViewSet(
         return queryset
 
     def get_serializer_class(self):
-        if self.action == "retrieve":
-            return BorrowingDetailSerializer
-        elif self.action == "create":
+        if self.action == "create":
             return BorrowingCreateSerializer
         elif self.action == "return_book":
             return BorrowingReturnSerializer
@@ -60,12 +55,7 @@ class BorrowingViewSet(
         return BorrowingSerializer
 
     def perform_create(self, serializer):
-        book_id = int(self.request.data.get("book"))
-        with transaction.atomic():
-            Book.objects.filter(id=book_id).update(
-                inventory=models.F("inventory") - 1
-            )
-            serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user)
 
     @action(
         methods=["POST"],
@@ -78,11 +68,7 @@ class BorrowingViewSet(
         serializer = self.get_serializer(borrowing, data=request.data)
 
         if serializer.is_valid():
-            with transaction.atomic():
-                Book.objects.filter(id=borrowing.book.id).update(
-                    inventory=models.F("inventory") + 1
-                )
-                serializer.save()
+            serializer.save()
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

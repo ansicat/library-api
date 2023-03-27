@@ -11,7 +11,9 @@ class Book(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
     cover = models.PositiveSmallIntegerField(choices=Cover.choices)
-    inventory = models.PositiveIntegerField()
+    inventory = models.PositiveIntegerField(
+        validators=[MinValueValidator(limit_value=0)]
+    )
     daily_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -20,3 +22,7 @@ class Book(models.Model):
 
     def __str__(self):
         return f'"{self.title}" by {self.author}'
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
