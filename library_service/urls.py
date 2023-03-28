@@ -21,4 +21,5 @@ urlpatterns = [
     path("users/", include("user.urls", namespace="user")),
     path("books/", include("book.urls", namespace="book")),
     path("borrowings/", include("borrowing.urls", namespace="borrowing")),
+    path("__debug__/", include("debug_toolbar.urls")),
 ]
