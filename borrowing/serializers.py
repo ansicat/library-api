@@ -49,26 +49,27 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             instance = super().create(validated_data)
+
+            with transaction.atomic():
+                book = get_object_or_404(Book, id=instance.book.id)
+
+                if book.inventory == 0:
+                    raise serializers.ValidationError(
+                        "The book is out of stock"
+                    )
+
+                book.inventory -= 1
+                book.save()
+                instance.save()
+
+                return instance
+
         except ValidationError as e:
             raise serializers.ValidationError(e.messages)
 
-        with transaction.atomic():
-            book = get_object_or_404(Book, id=instance.book.id)
-
-            if book.inventory == 0:
-                raise ValidationError("Book is out of stock")
-
-            book.inventory -= 1
-            book.save()
-            instance.save()
-
-            return instance
-
 
 class BorrowingReturnSerializer(serializers.ModelSerializer):
-    actual_return_date = serializers.DateField(
-        required=True, initial=datetime.date.today
-    )
+    actual_return_date = serializers.DateField(required=True)
 
     class Meta:
         model = Borrowing
@@ -88,21 +89,25 @@ class BorrowingReturnSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        instance.actual_return_date = validated_data.get(
-            "actual_return_date", instance.actual_return_date
-        )
+        try:
+            instance.actual_return_date = validated_data.get(
+                "actual_return_date", instance.actual_return_date
+            )
 
-        with transaction.atomic():
-            borrowing = get_object_or_404(Borrowing, id=instance.id)
-            book = get_object_or_404(Book, id=instance.book.id)
+            with transaction.atomic():
+                borrowing = get_object_or_404(Borrowing, id=instance.id)
+                book = get_object_or_404(Book, id=instance.book.id)
 
-            if borrowing.actual_return_date is not None:
-                raise ValidationError(
-                    "The book has already been returned by user"
-                )
+                if borrowing.actual_return_date is not None:
+                    raise serializers.ValidationError(
+                        "The book has already been returned by user"
+                    )
 
-            book.inventory += 1
-            book.save()
-            instance.save()
+                book.inventory += 1
+                book.save()
+                instance.save()
 
-            return instance
+                return instance
+
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
