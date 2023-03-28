@@ -24,7 +24,9 @@ class BorrowingViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Borrowing.objects.select_related()
+    queryset = Borrowing.objects.select_related().order_by(
+        "-borrow_date", "-id"
+    )
     serializer_class = BorrowingSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
@@ -39,6 +41,8 @@ class BorrowingViewSet(
         is_active = self.request.query_params.get("is_active")
         if is_active == "true":
             queryset = queryset.filter(actual_return_date__isnull=True)
+        elif is_active == "false":
+            queryset = queryset.filter(actual_return_date__isnull=False)
 
         user_id = self.request.query_params.get("user_id")
         if str(user_id).isdigit() and self.request.user.is_staff:
@@ -61,6 +65,7 @@ class BorrowingViewSet(
         methods=["POST"],
         detail=True,
         url_path="return",
+        url_name="return",
     )
     def return_book(self, request, pk=None):
         """Endpoint for return borrowing of book"""
@@ -72,3 +77,10 @@ class BorrowingViewSet(
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @return_book.mapping.get
+    def return_info(self, request, pk=None):
+        borrowing = self.get_object()
+        serializer = self.get_serializer(borrowing)
+
+        return Response(serializer.data)
