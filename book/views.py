@@ -17,7 +17,7 @@ class BookPagination(PageNumberPagination):
 
 
 class BookViewSet(viewsets.ModelViewSet):
-    queryset = Book.objects.all()
+    queryset = Book.objects.order_by("title", "author")
     serializer_class = BookSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrReadOnly,)
