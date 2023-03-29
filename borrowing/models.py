@@ -3,8 +3,6 @@ from django.db import models
 from book.models import Book
 from user.models import Customer
 
-S
-
 
 class Borrowing(models.Model):
     borrow_date = models.DateField()
