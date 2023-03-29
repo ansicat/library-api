@@ -50,6 +50,7 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         try:
             instance = super().create(validated_data)
 
+            """Decrease inventory of book by 1 when we confirm borrowing"""
             with transaction.atomic():
                 book = get_object_or_404(Book, id=instance.book.id)
 
@@ -94,6 +95,7 @@ class BorrowingReturnSerializer(serializers.ModelSerializer):
                 "actual_return_date", instance.actual_return_date
             )
 
+            """Increase inventory of book by 1 when we return borrowing"""
             with transaction.atomic():
                 borrowing = get_object_or_404(Borrowing, id=instance.id)
                 book = get_object_or_404(Book, id=instance.book.id)

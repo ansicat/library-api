@@ -106,7 +106,7 @@ class BorrowingCreateSerializerTests(TestCase):
         with self.assertRaises(ValidationError) as e:
             serializer.save(user=self.user)
         self.assertIn(
-            "Expected return date should be greater or equal to borrow date",
+            "Expected return date should be greater or equal then borrow date",
             e.exception.args[0],
         )
 
@@ -161,7 +161,7 @@ class BorrowingReturnSerializerTests(TestCase):
             serializer.save()
 
         self.assertIn(
-            "Actual return date should be greater or equal to borrow date",
+            "Actual return date should be greater or equal then borrow date",
             e.exception.args[0],
         )
 

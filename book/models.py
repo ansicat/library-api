@@ -11,12 +11,14 @@ class Book(models.Model):
     author = models.CharField(max_length=255)
     cover = models.PositiveSmallIntegerField(choices=Cover.choices)
     inventory = models.PositiveIntegerField(
-        validators=[MinValueValidator(limit_value=0)]
+        validators=[MinValueValidator(limit_value=0)],
+        help_text="Copies of the book available for borrowing (positive)",
     )
     daily_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(limit_value=0)],
+        help_text="Amount of daily fee when book is borrowed (positive)",
     )
 
     def __str__(self):

@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -35,10 +37,11 @@ class BorrowingViewSet(
     def get_queryset(self):
         queryset = self.queryset
 
+        """Filters for list of borrowings"""
         if not self.request.user.is_staff:
             queryset = queryset.filter(user=self.request.user)
 
-        is_active = self.request.query_params.get("is_active")
+        is_active = str(self.request.query_params.get("is_active")).lower()
         if is_active == "true":
             queryset = queryset.filter(actual_return_date__isnull=True)
         elif is_active == "false":
@@ -84,3 +87,24 @@ class BorrowingViewSet(
         serializer = self.get_serializer(borrowing)
 
         return Response(serializer.data)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "is_active",
+                type=OpenApiTypes.BOOL,
+                description=(
+                    "Filter by state of borrowed book (ex. ?is_active=true)"
+                ),
+            ),
+            OpenApiParameter(
+                "user_id",
+                type=OpenApiTypes.INT,
+                description=(
+                    "Filter by user id (for admins only) (ex. ?user_id=1)"
+                ),
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
