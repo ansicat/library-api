@@ -12,6 +12,7 @@ This API provides an online management system for book borrowings in a library. 
 - Return books
 - Filter active book borrowings
 - Filter book borrowings by user
+- Notifications when borrow/return book (Telegram)
 - Manage user information
 
 ## Installation

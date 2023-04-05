@@ -13,6 +13,7 @@ from borrowing.serializers import (
     BorrowingCreateSerializer,
     BorrowingReturnSerializer,
 )
+from library_service.services import borrowing_send_notification
 
 
 class BorrowingPagination(PageNumberPagination):
@@ -64,6 +65,19 @@ class BorrowingViewSet(
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+        # send notification to Telegram Bot
+        borrowing_id = serializer.data["id"]
+        borrow_date = serializer.validated_data["borrow_date"]
+        book_title = serializer.validated_data["book"].title
+        user_fullname = (
+            self.request.user.first_name + " " + self.request.user.last_name
+        )
+
+        borrowing_send_notification(
+            f"{borrow_date}: {book_title} was borrowed by "
+            f"{user_fullname} (id={borrowing_id})"
+        )
+
     @action(
         methods=["POST"],
         detail=True,
@@ -77,6 +91,24 @@ class BorrowingViewSet(
 
         if serializer.is_valid():
             serializer.save()
+
+            # send notification to Telegram Bot
+            borrowing_id = borrowing.id
+            actual_return_date = serializer.validated_data[
+                "actual_return_date"
+            ]
+            book_title = borrowing.book.title
+            user_fullname = (
+                self.request.user.first_name
+                + " "
+                + self.request.user.last_name
+            )
+
+            borrowing_send_notification(
+                f"{actual_return_date}: {book_title} was returned by "
+                f"{user_fullname} (id={borrowing_id})"
+            )
+
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
