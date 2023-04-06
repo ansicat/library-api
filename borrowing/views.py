@@ -87,25 +87,21 @@ class BorrowingViewSet(
         borrowing = self.get_object()
         serializer = self.get_serializer(borrowing, data=request.data)
 
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-            # send notification to Telegram Bot
-            borrowing_id = borrowing.id
-            actual_return_date = serializer.validated_data[
-                "actual_return_date"
-            ]
-            book_title = borrowing.book.title
-            user_name = self.request.user.full_name
+        # send notification to Telegram Bot
+        borrowing_id = borrowing.id
+        actual_return_date = serializer.validated_data["actual_return_date"]
+        book_title = borrowing.book.title
+        user_name = self.request.user.full_name
 
-            borrowing_send_notification(
-                f"{actual_return_date}: {book_title} was returned by "
-                f"{user_name} (id={borrowing_id})"
-            )
+        borrowing_send_notification(
+            f"{actual_return_date}: {book_title} was returned by "
+            f"{user_name} (id={borrowing_id})"
+        )
 
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data)
 
     @extend_schema(
         parameters=[
