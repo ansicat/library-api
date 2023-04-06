@@ -69,13 +69,11 @@ class BorrowingViewSet(
         borrowing_id = serializer.data["id"]
         borrow_date = serializer.validated_data["borrow_date"]
         book_title = serializer.validated_data["book"].title
-        user_fullname = (
-            self.request.user.first_name + " " + self.request.user.last_name
-        )
+        user_name = self.request.user.full_name
 
         borrowing_send_notification(
             f"{borrow_date}: {book_title} was borrowed by "
-            f"{user_fullname} (id={borrowing_id})"
+            f"{user_name} (id={borrowing_id})"
         )
 
     @action(
@@ -89,7 +87,7 @@ class BorrowingViewSet(
         borrowing = self.get_object()
         serializer = self.get_serializer(borrowing, data=request.data)
 
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
 
             # send notification to Telegram Bot
@@ -98,15 +96,11 @@ class BorrowingViewSet(
                 "actual_return_date"
             ]
             book_title = borrowing.book.title
-            user_fullname = (
-                self.request.user.first_name
-                + " "
-                + self.request.user.last_name
-            )
+            user_name = self.request.user.full_name
 
             borrowing_send_notification(
                 f"{actual_return_date}: {book_title} was returned by "
-                f"{user_fullname} (id={borrowing_id})"
+                f"{user_name} (id={borrowing_id})"
             )
 
             return Response(serializer.data)
