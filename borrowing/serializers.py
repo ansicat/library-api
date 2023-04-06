@@ -1,5 +1,3 @@
-import datetime
-
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -47,10 +45,13 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        # trying to catch Django ValidationError and convert it to
+        # REST ValidationError in order to show warning message instead of
+        # runtime error when database constraints for some fields were violated
         try:
             instance = super().create(validated_data)
 
-            """Decrease inventory of book by 1 when we confirm borrowing"""
+            # decrease inventory of book by 1 when we confirm borrowing
             with transaction.atomic():
                 book = get_object_or_404(Book, id=instance.book.id)
 
@@ -90,12 +91,15 @@ class BorrowingReturnSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
+        # trying to catch Django ValidationError and convert it to
+        # REST ValidationError in order to show warning message instead of
+        # runtime error when database constraints for some fields were violated
         try:
             instance.actual_return_date = validated_data.get(
                 "actual_return_date", instance.actual_return_date
             )
 
-            """Increase inventory of book by 1 when we return borrowing"""
+            # increase inventory of book by 1 when we return borrowing
             with transaction.atomic():
                 borrowing = get_object_or_404(Borrowing, id=instance.id)
                 book = get_object_or_404(Book, id=instance.book.id)
