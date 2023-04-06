@@ -107,13 +107,6 @@ class BorrowingViewSet(
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @return_book.mapping.get
-    def return_info(self, request, pk=None):
-        borrowing = self.get_object()
-        serializer = self.get_serializer(borrowing)
-
-        return Response(serializer.data)
-
     @extend_schema(
         parameters=[
             OpenApiParameter(
