@@ -25,6 +25,10 @@ pip install -r requirements.txt
 ```
 Use `.env_sample` file as a template and create `.env` file with your settings
 ```
-python3 manage.py migrate
+python3 manage.py migrate --with_test_data
 python3 manage.py runserver
 ```
+
+Use credentials for login:
+  - email: admin@example.com
+  - password: asdf7890
