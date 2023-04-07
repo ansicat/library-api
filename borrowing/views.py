@@ -1,11 +1,10 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, mixins, status
+from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from borrowing.models import Borrowing
 from borrowing.serializers import (
@@ -27,29 +26,36 @@ class BorrowingViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Borrowing.objects.select_related().order_by(
+    queryset = Borrowing.objects.select_related("book", "user").order_by(
         "-borrow_date", "-id"
     )
     serializer_class = BorrowingSerializer
-    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     pagination_class = BorrowingPagination
 
     def get_queryset(self):
+        def to_bool(value: str, default=None) -> bool:
+            valid_values = {
+                "True": True,
+                "False": False,
+                "true": True,
+                "false": False,
+            }
+
+            return valid_values.get(value, default)
+
         queryset = self.queryset
 
         """Filters for list of borrowings"""
         if not self.request.user.is_staff:
             queryset = queryset.filter(user=self.request.user)
 
-        is_active = str(self.request.query_params.get("is_active")).lower()
-        if is_active == "true":
-            queryset = queryset.filter(actual_return_date__isnull=True)
-        elif is_active == "false":
-            queryset = queryset.filter(actual_return_date__isnull=False)
+        is_active = to_bool(self.request.query_params.get("is_active", ""))
+        if is_active is not None:
+            queryset = queryset.filter(actual_return_date__isnull=is_active)
 
-        user_id = self.request.query_params.get("user_id")
-        if str(user_id).isdigit() and self.request.user.is_staff:
+        user_id = self.request.query_params.get("user_id", "")
+        if user_id.isdigit() and self.request.user.is_staff:
             queryset = queryset.filter(user_id=int(user_id))
 
         return queryset
