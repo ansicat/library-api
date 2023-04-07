@@ -34,15 +34,13 @@ class BorrowingViewSet(
     pagination_class = BorrowingPagination
 
     def get_queryset(self):
-        def to_bool(value: str, default=None) -> bool:
+        def to_bool(value: str) -> bool:
             valid_values = {
-                "True": True,
-                "False": False,
                 "true": True,
                 "false": False,
             }
 
-            return valid_values.get(value, default)
+            return valid_values.get(str(value).lower())
 
         queryset = self.queryset
 
@@ -50,12 +48,16 @@ class BorrowingViewSet(
         if not self.request.user.is_staff:
             queryset = queryset.filter(user=self.request.user)
 
-        is_active = to_bool(self.request.query_params.get("is_active", ""))
+        is_active = to_bool(self.request.query_params.get("is_active"))
         if is_active is not None:
             queryset = queryset.filter(actual_return_date__isnull=is_active)
 
-        user_id = self.request.query_params.get("user_id", "")
-        if user_id.isdigit() and self.request.user.is_staff:
+        user_id = self.request.query_params.get("user_id")
+        if (
+            user_id is not None
+            and user_id.isdigit()
+            and self.request.user.is_staff
+        ):
             queryset = queryset.filter(user_id=int(user_id))
 
         return queryset
