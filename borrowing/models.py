@@ -5,20 +5,30 @@ from user.models import Customer
 
 
 class Borrowing(models.Model):
-    borrow_date = models.DateField()
+    borrow_date = models.DateField(
+        help_text="Borrow date",
+    )
     expected_return_date = models.DateField(
-        help_text="Value should be greater or equal then borrow_date"
+        help_text="Expected return date "
+        "(value should be greater or equal then borrow_date)"
     )
     actual_return_date = models.DateField(
         blank=True,
         null=True,
-        help_text="Value should be greater or equal then borrow_date",
+        help_text="Actual retutn date "
+        "(value should be greater or equal then borrow_date)",
     )
     book = models.ForeignKey(
-        Book, on_delete=models.CASCADE, related_name="borrowings"
+        Book,
+        on_delete=models.CASCADE,
+        related_name="borrowings",
+        help_text="ID of borrowed book",
     )
     user = models.ForeignKey(
-        Customer, on_delete=models.CASCADE, related_name="borrowings"
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="borrowings",
+        help_text="ID of customer",
     )
 
     class Meta:

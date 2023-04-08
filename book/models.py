@@ -7,9 +7,18 @@ class Book(models.Model):
         HARD = 1
         SOFT = 2
 
-    title = models.CharField(max_length=255)
-    author = models.CharField(max_length=255)
-    cover = models.PositiveSmallIntegerField(choices=Cover.choices)
+    title = models.CharField(
+        max_length=255,
+        help_text="Title of the book",
+    )
+    author = models.CharField(
+        max_length=255,
+        help_text="Author of the book",
+    )
+    cover = models.PositiveSmallIntegerField(
+        choices=Cover.choices,
+        help_text="Cover of the book",
+    )
     inventory = models.PositiveIntegerField(
         validators=[MinValueValidator(limit_value=0)],
         help_text="Copies of the book available for borrowing (positive)",

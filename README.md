@@ -19,14 +19,14 @@ This API provides an online management system for book borrowings in a library. 
 ```
 git clone https://github.com/ansicat/library-api.git
 cd library-api
-python3 -m venv venv
+python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 Use `.env_sample` file as a template and create `.env` file with your settings
 ```
-python3 manage.py migrate --with_test_data
-python3 manage.py runserver
+python manage.py migrate --with_test_data
+python manage.py runserver
 ```
 
 Use credentials for login:

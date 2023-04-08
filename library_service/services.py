@@ -11,6 +11,7 @@ TELEGRAM_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 
 
 def borrowing_send_notification(message):
+    """Send notifications about borrowings to Telegram chat"""
     try:
         requests.post(
             TELEGRAM_URL, json={"chat_id": TELEGRAM_CHAT_ID, "text": message}

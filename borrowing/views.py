@@ -1,5 +1,9 @@
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    extend_schema_view,
+)
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -20,6 +24,22 @@ class BorrowingPagination(PageNumberPagination):
     max_page_size = 100
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List of borrowings",
+        description="Get a paginated list of all borrowings",
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve borrowing",
+        description="Retrieve a specific borrowing",
+    ),
+    create=extend_schema(
+        summary="Create borrowing", description="Create a new borrowing"
+    ),
+    return_book=extend_schema(
+        summary="Return borrowing", description="Return a borrowed book"
+    ),
+)
 class BorrowingViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,

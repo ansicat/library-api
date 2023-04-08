@@ -165,6 +165,14 @@ SPECTACULAR_SETTINGS = {
         "defaultModelsExpandDepth": 2,
         "defaultModelExpandDepth": 2,
     },
+    "TAGS": [
+        {"name": "books", "description": "Operations related to books"},
+        {
+            "name": "borrowings",
+            "description": "Operations related to borrowings",
+        },
+        {"name": "users", "description": "Operations related to users"},
+    ],
 }
 
 SIMPLE_JWT = {
